@@ -10,12 +10,14 @@ class TarjetaCarton extends StatelessWidget {
     super.key,
     required this.carton,
     required this.marcados,
+    required this.patron,
     this.puesto,
     this.compacto = false,
   });
 
   final BingoCard carton;
   final Set<int> marcados;
+  final Set<Celda> patron;
   final int? puesto;
 
   /// Si es true, muestra solo nombre + barra de progreso (sin la
@@ -30,7 +32,8 @@ class TarjetaCarton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final aciertos = carton.aciertos(marcados);
+    final aciertos = carton.aciertos(marcados, patron);
+    final total = carton.totalCeldas(patron);
     final esTop = puesto != null;
 
     if (compacto) {
@@ -70,7 +73,7 @@ class TarjetaCarton extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '$aciertos/${carton.totalCeldas}',
+                    '$aciertos/$total',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
@@ -82,7 +85,7 @@ class TarjetaCarton extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: LinearProgressIndicator(
-                  value: aciertos / carton.totalCeldas,
+                  value: total == 0 ? 0 : aciertos / total,
                   minHeight: 8,
                   backgroundColor: Colors.grey.withValues(alpha: 0.2),
                 ),
@@ -128,7 +131,7 @@ class TarjetaCarton extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '$aciertos/${carton.totalCeldas}',
+                  '$aciertos/$total',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
@@ -144,35 +147,51 @@ class TarjetaCarton extends StatelessWidget {
                   child: Row(
                     children: List.generate(5, (col) {
                       final esLibre = BingoCard.esLibre(fila, col);
+                      final requerida = patron.contains((fila, col));
                       final numero = carton.filas[fila][col];
-                      final marcado = esLibre || marcados.contains(numero);
+                      final marcado = esLibre ||
+                          (requerida && marcados.contains(numero));
                       final color = esLibre
                           ? Colors.amber
                           : coloresLetrasBingo[col];
+                      final opacidad = !esLibre && !requerida ? 0.35 : 1.0;
                       return Expanded(
                         child: Padding(
                           padding: const EdgeInsets.all(2),
-                          child: AspectRatio(
-                            aspectRatio: 1,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: marcado
-                                    ? color
-                                    : color.withValues(alpha: 0.10),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              alignment: Alignment.center,
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4),
-                                  child: Text(
-                                    esLibre ? '⭐' : '$numero',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: esLibre ? 26 : 22,
-                                      fontWeight: FontWeight.bold,
-                                      color: marcado ? Colors.white : color,
+                          child: Opacity(
+                            opacity: opacidad,
+                            child: AspectRatio(
+                              aspectRatio: 1,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: marcado
+                                      ? color
+                                      : color.withValues(
+                                          alpha: requerida ? 0.10 : 0.05,
+                                        ),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: !esLibre && !requerida
+                                      ? Border.all(
+                                          color: Colors.grey.withValues(
+                                            alpha: 0.4,
+                                          ),
+                                        )
+                                      : null,
+                                ),
+                                alignment: Alignment.center,
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(4),
+                                    child: Text(
+                                      esLibre ? '⭐' : '$numero',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: esLibre ? 26 : 22,
+                                        fontWeight: FontWeight.bold,
+                                        color:
+                                            marcado ? Colors.white : color,
+                                      ),
                                     ),
                                   ),
                                 ),

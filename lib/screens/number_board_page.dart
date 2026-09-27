@@ -12,12 +12,14 @@ class NumberBoardPage extends StatelessWidget {
     super.key,
     required this.marcados,
     required this.cartones,
+    required this.patron,
     required this.onToggle,
     required this.onReiniciar,
   });
 
   final Set<int> marcados;
   final List<BingoCard> cartones;
+  final Set<Celda> patron;
   final ValueChanged<int> onToggle;
   final VoidCallback onReiniciar;
 
@@ -48,7 +50,11 @@ class NumberBoardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ordenados = [...cartones]
-      ..sort((a, b) => b.aciertos(marcados).compareTo(a.aciertos(marcados)));
+      ..sort(
+        (a, b) => b
+            .aciertos(marcados, patron)
+            .compareTo(a.aciertos(marcados, patron)),
+      );
     final top3 = ordenados.take(3).toList();
 
     return Scaffold(
@@ -66,12 +72,12 @@ class NumberBoardPage extends StatelessWidget {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
           child: Column(
             children: [
               if (top3.isNotEmpty) ...[
                 SizedBox(
-                  height: 108,
+                  height: 100,
                   child: Row(
                     children: [
                       for (var i = 0; i < top3.length; i++)
@@ -83,6 +89,7 @@ class NumberBoardPage extends StatelessWidget {
                             child: TarjetaCarton(
                               carton: top3[i],
                               marcados: marcados,
+                              patron: patron,
                               puesto: i + 1,
                               compacto: true,
                             ),
@@ -91,7 +98,7 @@ class NumberBoardPage extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
               ],
               Row(
                 children: List.generate(5, (col) {

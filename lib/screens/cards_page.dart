@@ -9,17 +9,23 @@ class CardsPage extends StatelessWidget {
     super.key,
     required this.cartones,
     required this.marcados,
+    required this.patron,
     required this.onAgregar,
   });
 
   final List<BingoCard> cartones;
   final Set<int> marcados;
+  final Set<Celda> patron;
   final ValueChanged<BingoCard> onAgregar;
 
   @override
   Widget build(BuildContext context) {
     final ordenados = [...cartones]
-      ..sort((a, b) => b.aciertos(marcados).compareTo(a.aciertos(marcados)));
+      ..sort(
+        (a, b) => b
+            .aciertos(marcados, patron)
+            .compareTo(a.aciertos(marcados, patron)),
+      );
     final top3 = ordenados.take(3).toList();
 
     return Scaffold(
@@ -72,6 +78,7 @@ class CardsPage extends StatelessWidget {
                               child: TarjetaCarton(
                                 carton: top3[i],
                                 marcados: marcados,
+                                patron: patron,
                                 puesto: i + 1,
                               ),
                             ),
@@ -99,6 +106,7 @@ class CardsPage extends StatelessWidget {
                     itemBuilder: (context, i) => TarjetaCarton(
                       carton: ordenados[i],
                       marcados: marcados,
+                      patron: patron,
                     ),
                   ),
                   const SizedBox(height: 72),

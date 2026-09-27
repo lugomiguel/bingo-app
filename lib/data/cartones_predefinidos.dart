@@ -153,7 +153,7 @@ final List<BingoCard> cartonesPredefinidos = [
   ),
   BingoCard(
     id: 14,
-    nombre: 'Cartón 1014',
+    nombre: 'Cartón 1041',
     filas: [
       [11, 17, 33, 60, 75],
       [10, 28, 40, 48, 73],
